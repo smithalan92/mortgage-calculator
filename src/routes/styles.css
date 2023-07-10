@@ -1,0 +1,8 @@
+@import '@fontsource-variable/source-code-pro';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+	font-family: 'Source Code Pro Variable', sans-serif;
+}
