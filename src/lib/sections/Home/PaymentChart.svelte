@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { Chart, registerables } from 'chart.js';
-	import { chartConfig } from '$lib/store';
+	import { _chartConfig } from '$lib/store';
 	Chart.register(...registerables);
 
 	let portfolio: HTMLCanvasElement;
@@ -9,17 +9,17 @@
 
 	onMount(() => {
 		const ctx = portfolio.getContext('2d');
-		chart = new Chart(ctx!, $chartConfig);
+		chart = new Chart(ctx!, $_chartConfig);
 	});
 
 	const updateChart = (...args: any) => {
 		if (!chart) return;
-		chart.options = $chartConfig.options!;
-		chart.data = $chartConfig.data;
+		chart.options = $_chartConfig.options!;
+		chart.data = $_chartConfig.data;
 		chart.update();
 	};
 
-	$: updateChart($chartConfig);
+	$: updateChart($_chartConfig);
 </script>
 
 <div class="chart-container">

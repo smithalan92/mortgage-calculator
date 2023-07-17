@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
-	import { monthlyPayments } from '$lib/store';
+	import { _monthlyPayments } from '$lib/store';
 	import PaymentChart from '$lib/sections/Home/PaymentChart.svelte';
 </script>
 
@@ -28,7 +28,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each $monthlyPayments as payment (payment.paymentDate)}
+				{#each $_monthlyPayments as payment (payment.paymentDate)}
 					<tr>
 						<td class="border-2 border-solid border-gray-400 p-1">{payment.paymentDate}</td>
 						<td class="border-2 border-solid border-gray-400 p-1">{payment.principalDisplay}</td>

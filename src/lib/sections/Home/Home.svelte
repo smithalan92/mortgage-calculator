@@ -1,79 +1,152 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
+	import CalculationResults from '$lib/sections/Home/CalculationResults.svelte';
 	import RepaymentData from '$lib/sections/Home/RepaymentData.svelte';
 	import {
-		mortgageAmount,
-		interestRate,
-		mortgageTerm,
-		monthlyRepayment,
-		firstPaymentDate,
-		extraMonthlyPayment,
-		totalLoanCost,
-		totalInterestPaid,
-		timeToPaidOff,
+		_mortgageAmount,
+		_primaryInterestRate,
+		_secondaryInterestRate,
+		_mortgageTerm,
+		_primaryMonthlyRepayment,
+		_secondaryMonthlyRepayment,
+		_firstPaymentDate,
+		_extraMonthlyPayment,
+		_totalLoanCost,
+		_totalInterestPaid,
+		_timeToPaidOff,
 		calculate,
 		reset,
-		hasCalculatedMonthlyPayments
+		_hasCalculatedMonthlyPayments,
+		_mortgageType,
+		_fixedMortgageTerm,
+		resetFixedMortgageData
 	} from '$lib/store';
-	import { formatAsEuro } from '$lib/utils';
 
-	$: reset($mortgageAmount, $interestRate, $mortgageTerm, $firstPaymentDate, $extraMonthlyPayment);
+	$: reset(
+		$_mortgageAmount,
+		$_primaryInterestRate,
+		$_secondaryInterestRate,
+		$_mortgageType,
+		$_mortgageTerm,
+		$_fixedMortgageTerm,
+		$_firstPaymentDate,
+		$_extraMonthlyPayment
+	);
+
+	$: resetFixedMortgageData($_mortgageType);
 </script>
 
 <div class="flex justify-center py-2">
 	<h1 class="text-2xl font-bold">Mortgage Calculator</h1>
 </div>
 <div class="mt-4">
-	<div class="flex">
+	<div class="flex flex-col md:flex-row">
 		<div class="flex flex-col">
 			<div class="flex items-center mb-3">
-				<label class="min-w-[210px] font-bold" for="mortgageAmount">Mortgage Amount:</label>
+				<label class="w-[150px] md:min-w-[250px] font-bold" for="mortgageAmount"
+					>Mortgage Amount:</label
+				>
 				<input
-					class="ml-3 py-1 px-2 rounded outline-none border border-solid border-gray-500 w-[200px]"
+					class="ml-3 py-1 px-2 rounded outline-none border border-solid border-gray-500 w-[150px]"
 					type="number"
 					min="0"
-					bind:value={$mortgageAmount}
+					bind:value={$_mortgageAmount}
 					name="mortgageAmount"
 				/>
 			</div>
 			<div class="flex items-center mb-3">
-				<label class="min-w-[210px] font-bold" for="interestRate">Interest Rate (%):</label>
+				<label class="w-[150px] md:min-w-[250px] font-bold" for="interestRate"
+					>Interest Rate (%):</label
+				>
 				<input
-					class="ml-3 py-1 px-2 rounded outline-none border border-solid border-gray-500 w-[200px]"
+					class="ml-3 py-1 px-2 rounded outline-none border border-solid border-gray-500 w-[150px]"
 					type="number"
 					min="0"
 					step="0.05"
-					bind:value={$interestRate}
+					bind:value={$_primaryInterestRate}
 					name="interestRate"
 				/>
 			</div>
 			<div class="flex items-center mb-3">
-				<label class="min-w-[210px] font-bold" for="mortgageTerm">Mortgage Term:</label>
+				<label class="w-[150px] md:min-w-[250px] font-bold" for="mortgageType">Mortgage Type:</label
+				>
+				<div class="ml-3 flex flex-col">
+					<label>
+						<input
+							type="radio"
+							bind:group={$_mortgageType}
+							name="mortgageType"
+							value={'variable'}
+						/>
+						Variable
+					</label>
+
+					<label>
+						<input type="radio" bind:group={$_mortgageType} name="mortgageType" value={'fixed'} />
+						Fixed
+					</label>
+				</div>
+			</div>
+			{#if $_mortgageType === 'fixed'}
+				<div class="flex items-center mb-3">
+					<label class="w-[150px] md:min-w-[250px] font-bold" for="fixedMortgageTerm"
+						>Fixed Rate Term:</label
+					>
+					<input
+						class="ml-3 py-1 px-2 rounded outline-none border border-solid border-gray-500 w-[150px]"
+						type="number"
+						min="0"
+						step="1"
+						bind:value={$_fixedMortgageTerm}
+						name="fixedMortgageTerm"
+					/>
+				</div>
+				<div class="flex items-center mb-3">
+					<label class="w-[150px] md:min-w-[250px] font-bold" for="interestRate"
+						>Variable Interest Rate (%):</label
+					>
+					<input
+						class="ml-3 py-1 px-2 rounded outline-none border border-solid border-gray-500 w-[150px]"
+						type="number"
+						min="0"
+						step="0.05"
+						bind:value={$_secondaryInterestRate}
+						name="interestRate"
+					/>
+				</div>
+			{/if}
+			<div class="flex items-center mb-3">
+				<label class="w-[150px] md:min-w-[250px] font-bold" for="mortgageTerm">Mortgage Term:</label
+				>
 				<input
-					class="ml-3 py-1 px-2 rounded outline-none border border-solid border-gray-500 w-[200px]"
+					class="ml-3 py-1 px-2 rounded outline-none border border-solid border-gray-500 w-[150px]"
 					type="number"
 					min="0"
-					bind:value={$mortgageTerm}
+					bind:value={$_mortgageTerm}
 					name="mortgageTerm"
 				/>
 			</div>
 			<div class="flex items-center mb-3">
-				<label class="min-w-[210px] font-bold" for="firstPaymentDate">Extra Monthly Payment:</label>
+				<label class="w-[150px] md:min-w-[250px] font-bold" for="firstPaymentDate"
+					>Extra Monthly Payment:</label
+				>
 				<input
-					class="ml-3 py-1 px-2 rounded outline-none border border-solid border-gray-500 w-[200px]"
+					class="ml-3 py-1 px-2 rounded outline-none border border-solid border-gray-500 w-[150px]"
 					type="number"
 					min="0"
 					step="50"
-					bind:value={$extraMonthlyPayment}
+					bind:value={$_extraMonthlyPayment}
 					name="extraMonthlyPayment"
 				/>
 			</div>
 			<div class="flex items-center mb-3">
-				<label class="min-w-[210px] font-bold" for="firstPaymentDate">First Payment Date:</label>
+				<label class="w-[150px] md:min-w-[250px] font-bold" for="firstPaymentDate"
+					>First Payment Date:</label
+				>
 				<input
-					class="ml-3 py-1 px-2 rounded outline-none border border-solid border-gray-500 w-[200px]"
+					class="ml-3 py-1 px-2 rounded outline-none border border-solid border-gray-500 w-[150px]"
 					type="date"
-					bind:value={$firstPaymentDate}
+					bind:value={$_firstPaymentDate}
 					name="firstPaymentDate"
 				/>
 			</div>
@@ -83,32 +156,11 @@
 				on:click={calculate}>Calculate</button
 			>
 		</div>
-		<div class="ml-8">
-			{#if $monthlyRepayment > 0}
-				<div class="mt-4" in:slide={{ axis: 'y', duration: 500 }}>
-					<span class="underline font-bold text-xl">Base Monthly Repayment: </span>
-					{formatAsEuro($monthlyRepayment)}
-				</div>
-				<div class="mt-4" in:slide={{ axis: 'y', duration: 500 }}>
-					<span class="underline font-bold text-xl">Monthly Repayment You'll make: </span>
-					{formatAsEuro($monthlyRepayment + $extraMonthlyPayment)}
-				</div>
-				<div class="mt-4" in:slide={{ axis: 'y', duration: 500 }}>
-					<span class="underline font-bold text-xl">Total Loan Cost: </span>
-					{$totalLoanCost}
-				</div>
-				<div class="mt-4" in:slide={{ axis: 'y', duration: 500 }}>
-					<span class="underline font-bold text-xl">Total Interest Paid: </span>
-					{$totalInterestPaid}
-				</div>
-				<div class="mt-4" in:slide={{ axis: 'y', duration: 500 }}>
-					<span class="underline font-bold text-xl">Years to Pay Off: </span>
-					{$timeToPaidOff}
-				</div>
-			{/if}
-		</div>
+		{#if $_hasCalculatedMonthlyPayments}
+			<CalculationResults />
+		{/if}
 	</div>
-	{#if $hasCalculatedMonthlyPayments}
+	{#if $_hasCalculatedMonthlyPayments}
 		<RepaymentData />
 	{/if}
 </div>
