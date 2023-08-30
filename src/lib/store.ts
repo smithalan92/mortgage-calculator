@@ -10,9 +10,19 @@ import {
 
 export type MortgageType = 'fixed' | 'variable';
 
-export const _mortgageAmount = writable(260_000);
+export interface ExtraOneOffRepaymentData {
+	[key: string]: ExtraOneOffRepayment;
+}
+
+export interface ExtraOneOffRepayment {
+	id: string;
+	date: string;
+	amount: number;
+}
+
+export const _mortgageAmount = writable(256_000);
 // ie the inital interest rate
-export const _primaryInterestRate = writable(3.9);
+export const _primaryInterestRate = writable(3.95);
 export const _primaryInterestRateDecimal = derived(_primaryInterestRate, (value) => value / 100);
 // If fixed, this is the interest rate when the fixed period ends
 export const _secondaryInterestRate = writable(0.0);
@@ -20,7 +30,7 @@ export const _secondaryInterestRateDecimal = derived(
 	_secondaryInterestRate,
 	(value) => value / 100
 );
-export const _mortgageTerm = writable(35);
+export const _mortgageTerm = writable(30);
 export const _fixedMortgageTerm = writable(0);
 // starting monthly repayment
 export const _primaryMonthlyRepayment = writable(0);
@@ -30,6 +40,7 @@ export const _firstPaymentDate = writable(format(new Date(), 'yyyy-MM-dd'));
 export const _extraMonthlyPayment = writable(0);
 export const _monthlyPayments = writable<PaymentDetail[]>([]);
 export const _mortgageType = writable<MortgageType>('variable');
+export const _extraOneOffRepayments = writable<ExtraOneOffRepaymentData>({});
 
 export const _totalLoanCost = derived([_monthlyPayments], ([monthlyPayments]) => {
 	return formatAsEuro(
@@ -57,6 +68,13 @@ export const _timeToPaidOff = derived(_monthlyPayments, (monthlyPayments) => {
 	return `${years} years, ${months} months`;
 });
 
+export const _datePaidOff = derived(_monthlyPayments, (monthlyPayments) => {
+	if (!monthlyPayments.length) return '_';
+	const lastPaymentDate = monthlyPayments[monthlyPayments.length - 1].paymentDate;
+
+	return format(new Date(lastPaymentDate), 'MMMM yyyy');
+});
+
 export const _chartConfig = derived(_monthlyPayments, (monthlyPayments) => {
 	return getChartConfig(monthlyPayments);
 });
@@ -69,6 +87,7 @@ export function calculate() {
 	const fixedMortgageTerm = get(_fixedMortgageTerm);
 	const primaryInterestRate = get(_primaryInterestRateDecimal);
 	const secondaryInterestRate = get(_secondaryInterestRateDecimal);
+	const extraOneOffPayments = get(_extraOneOffRepayments);
 
 	let primaryMonthlyRepayment = 0;
 	let secondaryMonthlyRepayment = 0;
@@ -118,7 +137,8 @@ export function calculate() {
 			balance,
 			currencyFormatter,
 			paymentDate,
-			extraPayment
+			extraPayment,
+			extraOneOffPayments
 		});
 		balance = data.newBalance;
 		payments.push(data);

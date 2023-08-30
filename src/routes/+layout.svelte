@@ -1,6 +1,6 @@
 <script>
 	import './styles.css';
-	import github from '$lib/images/github.svg';
+	import github from '$lib/images/github.svg?url';
 </script>
 
 <div class="flex flex-col h-screen w-full">

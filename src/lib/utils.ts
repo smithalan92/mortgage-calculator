@@ -1,5 +1,6 @@
 import type { ChartConfiguration, ChartData } from 'chart.js';
 import { format } from 'date-fns';
+import type { ExtraOneOffRepaymentData } from './store';
 
 const currencyFormatter = new Intl.NumberFormat('en-IE', {
 	style: 'currency',
@@ -58,7 +59,8 @@ export function getPaymentDetails({
 	balance,
 	currencyFormatter,
 	paymentDate,
-	extraPayment
+	extraPayment,
+	extraOneOffPayments
 }: {
 	monthlyPayment: number;
 	interestRateDecimal: number;
@@ -66,6 +68,7 @@ export function getPaymentDetails({
 	currencyFormatter: Intl.NumberFormat;
 	paymentDate: Date;
 	extraPayment: number;
+	extraOneOffPayments: ExtraOneOffRepaymentData;
 }): PaymentDetail {
 	let interest, principal, truePrincipal;
 
@@ -76,6 +79,12 @@ export function getPaymentDetails({
 	} else {
 		({ interest, principal } = getLoanAmortisation(monthlyPayment, balance, interestRateDecimal));
 		truePrincipal = principal + extraPayment;
+
+		const paymentDateFormatted = format(paymentDate, 'yyyy-MM');
+
+		if (extraOneOffPayments[paymentDateFormatted]) {
+			truePrincipal += extraOneOffPayments[paymentDateFormatted].amount;
+		}
 	}
 
 	// Make sure to include the extra payment towards the principal

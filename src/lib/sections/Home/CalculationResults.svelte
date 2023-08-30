@@ -14,7 +14,8 @@
 		_timeToPaidOff,
 		_hasCalculatedMonthlyPayments,
 		_mortgageType,
-		_fixedMortgageTerm
+		_fixedMortgageTerm,
+		_datePaidOff
 	} from '$lib/store';
 	import { formatAsEuro } from '$lib/utils';
 </script>
@@ -57,6 +58,10 @@
 		<tr>
 			<td><span class="font-bold text-lg">Years to Pay Off = </span></td>
 			<td>{$_timeToPaidOff}</td>
+		</tr>
+		<tr>
+			<td><span class="font-bold text-lg">Date Paid Off = </span></td>
+			<td>{$_datePaidOff}</td>
 		</tr>
 	</table>
 </div>

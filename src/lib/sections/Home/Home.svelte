@@ -2,6 +2,7 @@
 	import { slide } from 'svelte/transition';
 	import CalculationResults from '$lib/sections/Home/CalculationResults.svelte';
 	import RepaymentData from '$lib/sections/Home/RepaymentData.svelte';
+	import ExtraPaymentModal from './ExtraPaymentModal.svelte';
 	import {
 		_mortgageAmount,
 		_primaryInterestRate,
@@ -14,6 +15,7 @@
 		_totalLoanCost,
 		_totalInterestPaid,
 		_timeToPaidOff,
+		_extraOneOffRepayments,
 		calculate,
 		reset,
 		_hasCalculatedMonthlyPayments,
@@ -34,6 +36,12 @@
 	);
 
 	$: resetFixedMortgageData($_mortgageType);
+
+	let isExtraPaymentModalOpen = false;
+
+	function togglePaymentModal() {
+		isExtraPaymentModalOpen = !isExtraPaymentModalOpen;
+	}
 </script>
 
 <div class="flex justify-center py-2">
@@ -152,7 +160,13 @@
 			</div>
 
 			<button
-				class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+				class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded mb-2"
+				on:click={togglePaymentModal}
+				>Extra One off Payments ({Object.keys($_extraOneOffRepayments).length})</button
+			>
+
+			<button
+				class="bg-green-300 hover:bg-green-400 text-white font-bold py-2 px-4 rounded"
 				on:click={calculate}>Calculate</button
 			>
 		</div>
@@ -164,3 +178,6 @@
 		<RepaymentData />
 	{/if}
 </div>
+{#if isExtraPaymentModalOpen}
+	<ExtraPaymentModal on:close={togglePaymentModal} />
+{/if}

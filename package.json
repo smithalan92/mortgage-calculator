@@ -11,6 +11,7 @@
 		"format": "prettier --plugin-search-dir . --write ."
 	},
 	"devDependencies": {
+		"@floating-ui/core": "^1.4.1",
 		"@fontsource-variable/source-code-pro": "^5.0.5",
 		"@neoconfetti/svelte": "^1.0.0",
 		"@sveltejs/adapter-auto": "^2.0.0",
@@ -29,6 +30,7 @@
 		"prettier-plugin-svelte": "^2.10.1",
 		"svelte": "^4.0.0",
 		"svelte-check": "^3.4.3",
+		"svelte-floating-ui": "^1.5.3",
 		"tailwindcss": "^3.3.2",
 		"tslib": "^2.4.1",
 		"typescript": "^5.0.0",
@@ -36,7 +38,9 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@poppanator/sveltekit-svg": "^4.0.0",
 		"chart.js": "^4.3.0",
-		"date-fns": "^2.30.0"
+		"date-fns": "^2.30.0",
+		"remeda": "^1.25.2"
 	}
 }
