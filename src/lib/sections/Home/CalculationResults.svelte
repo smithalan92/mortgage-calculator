@@ -1,7 +1,6 @@
 <script>
 	import { slide } from 'svelte/transition';
 	import {
-		_mortgageAmount,
 		_primaryInterestRate,
 		_secondaryInterestRate,
 		_mortgageTerm,

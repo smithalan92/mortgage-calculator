@@ -4,7 +4,7 @@
 	import RepaymentData from '$lib/sections/Home/RepaymentData.svelte';
 	import ExtraPaymentModal from './ExtraPaymentModal.svelte';
 	import {
-		_mortgageAmount,
+		_mortgageBalance,
 		_primaryInterestRate,
 		_secondaryInterestRate,
 		_mortgageTerm,
@@ -25,7 +25,7 @@
 	} from '$lib/store';
 
 	$: reset(
-		$_mortgageAmount,
+		$_mortgageBalance,
 		$_primaryInterestRate,
 		$_secondaryInterestRate,
 		$_mortgageType,
@@ -58,7 +58,7 @@
 					class="ml-3 py-1 px-2 rounded outline-none border border-solid border-gray-500 w-[150px]"
 					type="number"
 					min="0"
-					bind:value={$_mortgageAmount}
+					bind:value={$_mortgageBalance}
 					name="mortgageAmount"
 				/>
 			</div>

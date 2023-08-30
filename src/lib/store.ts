@@ -20,7 +20,7 @@ export interface ExtraOneOffRepayment {
 	amount: number;
 }
 
-export const _mortgageAmount = writable(256_000);
+export const _mortgageBalance = writable(256_000);
 // ie the inital interest rate
 export const _primaryInterestRate = writable(3.95);
 export const _primaryInterestRateDecimal = derived(_primaryInterestRate, (value) => value / 100);
@@ -80,7 +80,7 @@ export const _chartConfig = derived(_monthlyPayments, (monthlyPayments) => {
 });
 
 export function calculate() {
-	let balance = get(_mortgageAmount);
+	let balance = get(_mortgageBalance);
 	let paymentDate = new Date(get(_firstPaymentDate));
 	const extraPayment = get(_extraMonthlyPayment);
 	const mortgageTerm = get(_mortgageTerm);
@@ -150,14 +150,15 @@ export function calculate() {
 	_monthlyPayments.set(payments);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
-export function reset(...args: any) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function reset(...args: unknown[]) {
 	_primaryMonthlyRepayment.set(0);
 	_secondaryMonthlyRepayment.set(0);
 	_monthlyPayments.set([]);
 }
 
-export function resetFixedMortgageData(...args: any) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function resetFixedMortgageData(...args: unknown[]) {
 	_secondaryInterestRate.set(0);
 	_fixedMortgageTerm.set(0);
 }
