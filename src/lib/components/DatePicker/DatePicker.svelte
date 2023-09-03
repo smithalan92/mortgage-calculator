@@ -2,21 +2,18 @@
 	import { offset, flip, shift } from 'svelte-floating-ui/dom';
 	import { createFloatingActions } from 'svelte-floating-ui';
 	import DatePickerModal from './DatePickerModal.svelte';
-	import { createEventDispatcher } from 'svelte';
 	import { format } from 'date-fns';
 
 	export let value: string;
-
-	const dispatch = createEventDispatcher();
+	export let inputClass: string = '';
 
 	const [floatingRef, floatingContent] = createFloatingActions({
 		strategy: 'absolute',
 		placement: 'top',
 		middleware: [offset(4), flip(), shift()],
 		autoUpdate: {
-			// or false to disable everything
-			ancestorResize: false,
-			elementResize: false
+			ancestorResize: true,
+			elementResize: true
 		}
 	});
 
@@ -40,8 +37,14 @@
 	$: displayValue = value ? format(new Date(value), 'MMMM yyyy') : '';
 </script>
 
-<div class="relative">
-	<input placeholder="Select Date" value={displayValue} on:click={onClickInput} use:floatingRef />
+<div>
+	<input
+		class={inputClass}
+		placeholder="Select Date"
+		value={displayValue}
+		on:click={onClickInput}
+		use:floatingRef
+	/>
 	{#if showTooltip}
 		<DatePickerModal {floatingContent} on:selectDate={onSelectDate} on:close={onClose} />
 	{/if}

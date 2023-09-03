@@ -8,6 +8,7 @@
 		_secondaryMonthlyRepayment,
 		_firstPaymentDate,
 		_extraMonthlyPayment,
+		_extraOneOffRepayments,
 		_totalLoanCost,
 		_totalInterestPaid,
 		_timeToPaidOff,
@@ -62,6 +63,14 @@
 			<td><span class="font-bold text-lg">Date Paid Off = </span></td>
 			<td>{$_datePaidOff}</td>
 		</tr>
+		{#if $_mortgageType === 'fixed' && ($_extraMonthlyPayment > 0 || Object.keys($_extraOneOffRepayments).length > 0)}
+			<tr class="fixed-notice">
+				<td colspan="2" class="text-red-500">
+					Please note: Making extra monthly or one off repayments during a fixed rate mortgage term
+					pay incur a breakage fee which is not accounted for here.
+				</td>
+			</tr>
+		{/if}
 	</table>
 </div>
 
@@ -84,5 +93,13 @@
 
 	td:nth-child(2) {
 		@apply pl-4;
+	}
+
+	tr.fixed-notice {
+		@apply bg-white;
+	}
+
+	tr.fixed-notice td {
+		@apply text-left;
 	}
 </style>

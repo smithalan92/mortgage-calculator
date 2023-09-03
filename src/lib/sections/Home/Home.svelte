@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { slide } from 'svelte/transition';
+	import { browser } from '$app/environment';
 	import CalculationResults from '$lib/sections/Home/CalculationResults.svelte';
 	import RepaymentData from '$lib/sections/Home/RepaymentData.svelte';
 	import ExtraPaymentModal from './ExtraPaymentModal.svelte';
@@ -32,7 +32,8 @@
 		$_mortgageTerm,
 		$_fixedMortgageTerm,
 		$_firstPaymentDate,
-		$_extraMonthlyPayment
+		$_extraMonthlyPayment,
+		$_extraOneOffRepayments
 	);
 
 	$: resetFixedMortgageData($_mortgageType);
@@ -41,6 +42,16 @@
 
 	function togglePaymentModal() {
 		isExtraPaymentModalOpen = !isExtraPaymentModalOpen;
+	}
+
+	$: {
+		if (browser) {
+			if (isExtraPaymentModalOpen) {
+				document.body.style.overflow = 'hidden';
+			} else {
+				document.body.style.overflow = 'auto';
+			}
+		}
 	}
 </script>
 
@@ -166,7 +177,7 @@
 			>
 
 			<button
-				class="bg-green-300 hover:bg-green-400 text-white font-bold py-2 px-4 rounded"
+				class="bg-green-600 hover:bg-green-500 disabled:bg-gray-500 text-white font-bold py-2 px-4 rounded"
 				on:click={calculate}>Calculate</button
 			>
 		</div>

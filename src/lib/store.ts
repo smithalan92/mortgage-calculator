@@ -115,7 +115,8 @@ export function calculate() {
 				balance,
 				currencyFormatter,
 				paymentDate,
-				extraPayment
+				extraPayment,
+				extraOneOffPayments
 			});
 			balance = data.newBalance;
 			payments.push(data);

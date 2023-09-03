@@ -5,13 +5,25 @@
 		type ExtraOneOffRepayment,
 		type ExtraOneOffRepaymentData
 	} from '$lib/store';
-	import { createEventDispatcher } from 'svelte';
+	import { tick, createEventDispatcher } from 'svelte';
 	import { clone } from 'remeda';
 	// @ts-ignore
 	import CloseIcon from '$lib/images/close.svg?component';
+	// @ts-ignore
+	import WandIcon from '$lib/images/wand.svg?component';
 	import DatePicker from '$lib/components/DatePicker/DatePicker.svelte';
+	import ExtraPaymentGenerator from './ExtraPaymentGenerator.svelte';
 
 	function isPaymentDataValid(payments: ExtraOneOffRepayment[]) {
+		if (!payments.length) {
+			return false;
+		}
+
+		// Allow save if no valid data
+		if (payments.length === 1 && !payments[0].amount && !payments[0].date) {
+			return true;
+		}
+
 		for (const [idx, payment] of payments.entries()) {
 			if (idx === payments.length - 1 && payments.length > 1) {
 				if ((payment.date && !payment.amount) || (payment.amount && !payment.date)) {
@@ -36,14 +48,24 @@
 
 	$: canSaveRepayments = isPaymentDataValid(paymentsToAdd);
 
+	let shouldShowGenerateModal = false;
+
 	const dispatch = createEventDispatcher();
+
+	let paymentListRef: HTMLDivElement;
 
 	function close() {
 		dispatch('close');
 	}
 
-	function addPayment() {
+	async function addPayment() {
 		paymentsToAdd.push(getEmptyPaymentRecord());
+
+		await tick();
+
+		if (paymentListRef) {
+			paymentListRef.scrollTop = paymentListRef.scrollHeight;
+		}
 	}
 
 	function removePayment(id: string) {
@@ -60,6 +82,23 @@
 
 		_extraOneOffRepayments.set(data);
 		close();
+	}
+
+	function openGenerateModal() {
+		shouldShowGenerateModal = true;
+	}
+
+	function closeGenerateModal() {
+		shouldShowGenerateModal = false;
+	}
+
+	function setGeneratedPayments(event: CustomEvent<ExtraOneOffRepayment[]>) {
+		paymentsToAdd = event.detail;
+		closeGenerateModal();
+	}
+
+	function onClickClear() {
+		paymentsToAdd = [];
 	}
 
 	$: {
@@ -79,57 +118,75 @@
 		in:slide={{ axis: 'y', duration: 300 }}
 		out:slide={{ axis: 'y', duration: 300 }}
 	>
-		<div class="w-full flex justify-between px-4 py-2 relative">
-			<h1 class="text-lg font-bold">Add Extra Repayments</h1>
-			<button class="absolute top-0 right-0 py-3 px-4 hover:opacity-50" on:click={close}>
-				<CloseIcon class="w-[20px] h-[20px] fill-black" />
-			</button>
+		<div class="w-full flex justify-between items-center px-4 py-2 relative bg-black text-white">
+			<h1 class="text-lg font-bold select-none">Add Extra Repayments</h1>
+			<div class="flex absolute-top-0">
+				<button class="py-3 px-4 hover:opacity-50" on:click={openGenerateModal}>
+					<WandIcon class="w-[20px] h-[20px] fill-white" />
+				</button>
+				<button class="py-3 px-4 hover:opacity-50" on:click={close}>
+					<CloseIcon class="w-[20px] h-[20px] fill-white" />
+				</button>
+			</div>
 		</div>
 		<div class="p-4 flex-1 overflow-hidden">
-			<div class="h-full overflow-scroll relative">
-				<table class="border-collapse w-full relative">
-					<thead>
-						<th class="sticky top-[-1px] bg-white z-1">Payment Month & Year</th>
-						<th class="text-right sticky top-[-1px] bg-white z-1">Payment Amount</th>
-						<th class="sticky top-[-1px] bg-white z-1" />
-					</thead>
+			<div class="h-full relative">
+				<div class="flex w-full border border-solid border-black">
+					<div class="border-r border-solid border-black p-2 w-1/2">Payment Date</div>
+					<div class="border-r border-solid border-black text-right p-2 w-2/5">Payment Value</div>
+					<div class="p-2" />
+				</div>
+				<div
+					id="payment-list"
+					class="flex flex-col h-[250px] overflow-scroll"
+					bind:this={paymentListRef}
+				>
 					{#each paymentsToAdd as payment}
-						<tr>
-							<td>
-								<DatePicker bind:value={payment.date} />
-							</td>
-							<td>
+						<div class="flex h-50">
+							<div class="w-1/2 p-2 border-x border-b border-solid border-black">
+								<DatePicker bind:value={payment.date} inputClass="w-full" />
+							</div>
+							<div class="w-2/5 p-2 border-r border-b border-solid border-black">
 								<input
 									class="text-right w-full outline-none"
 									type="number"
 									bind:value={payment.amount}
 								/>
-							</td>
-							<td
-								class="hover:opacity-50 cursor-pointer"
-								on:click={() => removePayment(payment.id)}
+							</div>
+							<div
+								class="flex flex-1 items-center justify-center border-r border-b border-solid border-black"
 							>
-								<CloseIcon class="w-4 h-4 fill-red-700" />
-							</td>
-						</tr>
+								<button
+									class="p-2 hover:opacity-50 cursor-pointer"
+									on:click={() => removePayment(payment.id)}
+								>
+									<CloseIcon class="w-4 h-4 fill-red-700" />
+								</button>
+							</div>
+						</div>
 					{/each}
-				</table>
+				</div>
 			</div>
 		</div>
+		<div class="flex justify-end p-4">
+			{#if paymentsToAdd.length > 1}
+				<button class="text-blue-400 px-4 hover:underline" on:click={onClickClear}>Clear</button>
+			{/if}
+		</div>
 		<div class="p-4 flex justify-end">
-			<button class="mr-8 hover:text-gray-500" on:click={close}>Cancel</button>
+			<button class="mr-8 hover:text-gray-500 px-6 py-2" on:click={close}>Cancel</button>
 			<button
-				class="text-green-600 hover:text-green-400 disabled:text-gray-400"
+				class="bg-green-600 hover:bg-green-500 disabled:bg-gray-400 text-white px-6 py-2 rounded-sm"
 				disabled={!canSaveRepayments}
 				on:click={savePayments}>Save</button
 			>
 		</div>
 	</div>
-</div>
 
-<style>
-	td,
-	th {
-		@apply p-2 border border-solid border-black;
-	}
-</style>
+	{#if shouldShowGenerateModal}
+		<ExtraPaymentGenerator
+			on:close={closeGenerateModal}
+			on:generatedPayments={setGeneratedPayments}
+		/>
+	{/if}
+</div>
