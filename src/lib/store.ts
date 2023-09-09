@@ -1,12 +1,11 @@
-import { format, addMonths, differenceInYears, differenceInMonths } from 'date-fns';
-import { writable, get, derived } from 'svelte/store';
+import { differenceInMonths, differenceInYears, format } from 'date-fns';
+import { derived, get, writable } from 'svelte/store';
 import {
-	formatAsEuro,
-	getChartConfig,
-	getMonthlyRepayment,
-	getPaymentDetails,
+	calculateFixedRateMortgage,
+	calculateVariableRateMortgage,
 	type PaymentDetail
-} from './utils';
+} from './mortgageCalculations';
+import { formatAsEuro } from './utils';
 
 export type MortgageType = 'fixed' | 'variable';
 
@@ -75,13 +74,9 @@ export const _datePaidOff = derived(_monthlyPayments, (monthlyPayments) => {
 	return format(new Date(lastPaymentDate), 'MMMM yyyy');
 });
 
-export const _chartConfig = derived(_monthlyPayments, (monthlyPayments) => {
-	return getChartConfig(monthlyPayments);
-});
-
 export function calculate() {
-	let balance = get(_mortgageBalance);
-	let paymentDate = new Date(get(_firstPaymentDate));
+	const balance = get(_mortgageBalance);
+	const paymentDate = new Date(get(_firstPaymentDate));
 	const extraPayment = get(_extraMonthlyPayment);
 	const mortgageTerm = get(_mortgageTerm);
 	const fixedMortgageTerm = get(_fixedMortgageTerm);
@@ -89,66 +84,35 @@ export function calculate() {
 	const secondaryInterestRate = get(_secondaryInterestRateDecimal);
 	const extraOneOffPayments = get(_extraOneOffRepayments);
 
-	let primaryMonthlyRepayment = 0;
-	let secondaryMonthlyRepayment = 0;
-
-	if (fixedMortgageTerm > 0) {
-		primaryMonthlyRepayment = getMonthlyRepayment(balance, primaryInterestRate, mortgageTerm);
-	} else {
-		primaryMonthlyRepayment = getMonthlyRepayment(balance, primaryInterestRate, mortgageTerm);
-	}
-
-	const currencyFormatter = new Intl.NumberFormat('en-IE', {
-		style: 'currency',
-		currency: 'EUR'
-	});
-
-	const payments: PaymentDetail[] = [];
-
-	if (fixedMortgageTerm > 0) {
-		let monthlyPayments = fixedMortgageTerm * 12;
-
-		while (monthlyPayments > 0) {
-			const data = getPaymentDetails({
-				monthlyPayment: primaryMonthlyRepayment,
-				interestRateDecimal: primaryInterestRate,
-				balance,
-				currencyFormatter,
-				paymentDate,
-				extraPayment,
-				extraOneOffPayments
-			});
-			balance = data.newBalance;
-			payments.push(data);
-			paymentDate = addMonths(paymentDate, 1);
-			monthlyPayments -= 1;
-		}
-
-		secondaryMonthlyRepayment = getMonthlyRepayment(
-			balance,
-			secondaryInterestRate,
-			mortgageTerm - fixedMortgageTerm
-		);
-	}
-
-	while (balance > 0) {
-		const data = getPaymentDetails({
-			monthlyPayment: fixedMortgageTerm > 0 ? secondaryMonthlyRepayment : primaryMonthlyRepayment,
-			interestRateDecimal: fixedMortgageTerm > 0 ? secondaryInterestRate : primaryInterestRate,
-			balance,
-			currencyFormatter,
-			paymentDate,
-			extraPayment,
-			extraOneOffPayments
+	if (fixedMortgageTerm === 0) {
+		const { monthlyPayment, payments } = calculateVariableRateMortgage({
+			mortgageBalance: balance,
+			variableInterestRate: primaryInterestRate,
+			mortgageTerm,
+			firstPaymentDate: paymentDate,
+			extraMonthlyPayment: extraPayment,
+			extraOneOffPayments: extraOneOffPayments
 		});
-		balance = data.newBalance;
-		payments.push(data);
-		paymentDate = addMonths(paymentDate, 1);
-	}
 
-	_primaryMonthlyRepayment.set(primaryMonthlyRepayment);
-	_secondaryMonthlyRepayment.set(secondaryMonthlyRepayment);
-	_monthlyPayments.set(payments);
+		_primaryMonthlyRepayment.set(monthlyPayment);
+		_monthlyPayments.set(payments);
+	} else {
+		const { fixedRateMonthlyPayment, variableRateMonthlyPayment, payments } =
+			calculateFixedRateMortgage({
+				mortgageBalance: balance,
+				fixedInterestRate: primaryInterestRate,
+				variableInterestRate: secondaryInterestRate,
+				mortgageTerm,
+				fixedRateTerm: fixedMortgageTerm,
+				firstPaymentDate: paymentDate,
+				extraMonthlyPayment: extraPayment,
+				extraOneOffPayments: extraOneOffPayments
+			});
+
+		_primaryMonthlyRepayment.set(fixedRateMonthlyPayment);
+		_secondaryMonthlyRepayment.set(variableRateMonthlyPayment);
+		_monthlyPayments.set(payments);
+	}
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

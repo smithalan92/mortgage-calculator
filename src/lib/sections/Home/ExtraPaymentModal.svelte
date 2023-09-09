@@ -59,7 +59,7 @@
 	}
 
 	async function addPayment() {
-		paymentsToAdd.push(getEmptyPaymentRecord());
+		paymentsToAdd = [...paymentsToAdd, getEmptyPaymentRecord()];
 
 		await tick();
 
@@ -98,7 +98,7 @@
 	}
 
 	function onClickClear() {
-		paymentsToAdd = [];
+		paymentsToAdd = [getEmptyPaymentRecord()];
 	}
 
 	$: {
@@ -112,7 +112,7 @@
 	}
 </script>
 
-<div class="w-screen h-screen absolute bg-black/30 top-0 left-0 flex items-center justify-center">
+<div class="w-screen h-screen fixed bg-black/30 top-0 left-0 flex items-center justify-center">
 	<div
 		class="w-[500px] h-[500px] bg-white flex flex-col"
 		in:slide={{ axis: 'y', duration: 300 }}

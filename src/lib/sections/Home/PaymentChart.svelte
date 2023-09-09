@@ -1,25 +1,28 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { Chart, registerables } from 'chart.js';
-	import { _chartConfig } from '$lib/store';
+	import { _monthlyPayments } from '$lib/store';
+	import { getPaymentChartConfig } from '$lib/chartConfigs';
 	Chart.register(...registerables);
 
 	let portfolio: HTMLCanvasElement;
 	let chart: Chart;
 
+	$: chartConfig = getPaymentChartConfig($_monthlyPayments);
+
 	onMount(() => {
 		const ctx = portfolio.getContext('2d');
-		chart = new Chart(ctx!, $_chartConfig);
+		chart = new Chart(ctx!, chartConfig);
 	});
 
 	const updateChart = (...args: any) => {
 		if (!chart) return;
-		chart.options = $_chartConfig.options!;
-		chart.data = $_chartConfig.data;
+		chart.options = chartConfig.options!;
+		chart.data = chartConfig.data;
 		chart.update();
 	};
 
-	$: updateChart($_chartConfig);
+	$: updateChart(chartConfig);
 </script>
 
 <div class="chart-container">
