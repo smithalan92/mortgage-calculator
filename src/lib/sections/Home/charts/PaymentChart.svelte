@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { Chart, registerables } from 'chart.js';
-	import { _monthlyPayments } from '$lib/store';
 	import { getPaymentChartConfig } from '$lib/chartConfigs';
+	import { _monthlyPayments } from '$lib/store';
+	import { Chart, registerables } from 'chart.js';
+	import { onMount } from 'svelte';
 	Chart.register(...registerables);
 
 	let portfolio: HTMLCanvasElement;
@@ -33,5 +33,6 @@
 	.chart-container {
 		height: 500px;
 		width: 100%;
+		padding: 24px;
 	}
 </style>

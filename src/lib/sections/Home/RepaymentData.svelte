@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { slide } from 'svelte/transition';
+	import PaymentChart from '$lib/sections/Home/charts/PaymentChart.svelte';
 	import { _monthlyPayments } from '$lib/store';
-	import PaymentChart from '$lib/sections/Home/PaymentChart.svelte';
+	import { slide } from 'svelte/transition';
+	import BalanceChart from './charts/BalanceChart.svelte';
 </script>
 
 <div in:slide={{ axis: 'y', duration: 1000 }}>
@@ -39,5 +40,6 @@
 			</tbody>
 		</table>
 	</div>
+	<BalanceChart />
 	<PaymentChart />
 </div>
